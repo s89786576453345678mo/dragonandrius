@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     
     if (!baseUrl) {
       return NextResponse.json({ 
-        error: "BASE_URL nao configurada. Configure: https://dragonteste.onrender.com" 
+        error: "BASE_URL nao configurada. Configure: https://dragonandrius.onrender.com" 
       }, { status: 500 })
     }
 

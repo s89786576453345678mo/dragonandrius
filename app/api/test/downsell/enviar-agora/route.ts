@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 // Endpoint para FORCAR o envio das mensagens pendentes
 // Util para testar sem depender do cron externo
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://dragonteste.onrender.com"
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://dragonandrius.onrender.com"
   
   try {
     // Chamar o cron diretamente

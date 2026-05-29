@@ -11,7 +11,7 @@ export async function registrarWebhook(token: string, botId: string): Promise<{
 }> {
   try {
     // URL hardcoded da Render - nao depende de variavel de ambiente
-    const baseUrl = "https://dragonteste.onrender.com"
+    const baseUrl = "https://dragonandrius.onrender.com"
     
     console.log("[v0] Registrando webhook com URL:", baseUrl)
 
