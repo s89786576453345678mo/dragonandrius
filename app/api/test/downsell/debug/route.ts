@@ -95,10 +95,13 @@ export async function GET(request: NextRequest) {
       const callbacksEsperados = []
       for (const seq of downsell.sequences || []) {
         for (const plan of seq.plans || []) {
+          // IMPORTANTE: Callback usa preco em CENTAVOS!
+          const priceInCents = Math.round((plan.price || 0) * 100)
           callbacksEsperados.push({
-            callback_data: `ds_${seq.id}_${plan.id}_${plan.price}`,
+            callback_data: `ds_${seq.id}_${plan.id}_${priceInCents}`,
             botao: plan.buttonText,
-            preco: plan.price
+            preco: plan.price,
+            preco_centavos: priceInCents
           })
         }
       }
