@@ -846,13 +846,18 @@ async function processCallbackQuery({
     
     if (isAccept) {
       // Aceito: cobrar produto principal + order bump
-      const mainAmount = parseFloat(parts[0]) || 0
-      const bumpAmount = parseFloat(parts[1]) || 0
+      // IMPORTANTE: Valores vem em CENTAVOS, converter para REAIS dividindo por 100
+      const mainAmountCents = parseInt(parts[0]) || 0
+      const bumpAmountCents = parseInt(parts[1]) || 0
+      const mainAmount = mainAmountCents / 100
+      const bumpAmount = bumpAmountCents / 100
       totalAmount = mainAmount + bumpAmount
       productType = "order_bump"
       description = `${mainDescription} + ${orderBumpName}`
       
       await orderBumpLog.info("ORDER BUMP ACEITO pelo usuario", {
+        main_amount_cents: mainAmountCents,
+        bump_amount_cents: bumpAmountCents,
         main_amount: mainAmount,
         bump_amount: bumpAmount,
         total_amount: totalAmount,
@@ -861,10 +866,13 @@ async function processCallbackQuery({
       }, { telegram_user_id: telegramUserId, bot_id: bot.id })
     } else {
       // Recusado: cobrar apenas produto principal
-      totalAmount = parseFloat(parts[0]) || 0
+      // IMPORTANTE: Valor vem em CENTAVOS, converter para REAIS dividindo por 100
+      const mainAmountCents = parseInt(parts[0]) || 0
+      totalAmount = mainAmountCents / 100
       description = mainDescription
       
       await orderBumpLog.info("ORDER BUMP RECUSADO pelo usuario", {
+        main_amount_cents: mainAmountCents,
         total_amount: totalAmount,
         description: description,
         product_type: productType,
@@ -968,7 +976,7 @@ async function processCallbackQuery({
   }
 
   // ========== DOWNSELL CALLBACKS (NOVO FORMATO) ==========
-  // Formato: ds_sequenceId_planId_price
+  // Formato: ds_sequenceId_planId_priceInCents (preco em CENTAVOS!)
   if (callbackData.startsWith("ds_") && !callbackData.startsWith("ds_test_")) {
     console.log("[v0] Downsell Callback (ds_) recebido:", callbackData)
     
@@ -982,9 +990,13 @@ async function processCallbackQuery({
       })
     })
     
-    // Parsear: ds_sequenceId_planId_price
+    // Parsear: ds_sequenceId_planId_priceInCents
+    // IMPORTANTE: O preco vem em CENTAVOS, converter para REAIS dividindo por 100
     const parts = callbackData.replace("ds_", "").split("_")
-    const price = parseFloat(parts[2]) || 0
+    const priceInCents = parseInt(parts[2]) || 0
+    const price = priceInCents / 100
+    
+    console.log("[v0] Downsell - priceInCents:", priceInCents, "price (reais):", price)
     
     if (price > 0) {
       // Usar a funcao generatePayment que ja existe
@@ -1215,14 +1227,15 @@ async function processCallbackQuery({
         const orderBumpDeclineText = orderBumpInicial.rejectText || "NAO QUERO"
         const orderBumpName = orderBumpInicial.name || "Order Bump"
 
-        // Formato: ob_accept_{mainAmount}_{bumpAmount}_{bumpName} ou ob_decline_{mainAmount}
-        const mainAmount = String(amount)
-        const bumpAmount = String(orderBumpAmount)
+        // Formato: ob_accept_{mainAmountCents}_{bumpAmountCents} ou ob_decline_{mainAmountCents}
+        // IMPORTANTE: Usar CENTAVOS para evitar problemas de precisao com decimais
+        const mainAmountCents = Math.round(amount * 100)
+        const bumpAmountCents = Math.round(orderBumpAmount * 100)
         
         const orderBumpKeyboard = {
           inline_keyboard: [
-            [{ text: orderBumpAcceptText, callback_data: `ob_accept_${mainAmount}_${bumpAmount}` }],
-            [{ text: orderBumpDeclineText, callback_data: `ob_decline_${mainAmount}` }]
+            [{ text: orderBumpAcceptText, callback_data: `ob_accept_${mainAmountCents}_${bumpAmountCents}` }],
+            [{ text: orderBumpDeclineText, callback_data: `ob_decline_${mainAmountCents}` }]
           ]
         }
 
