@@ -422,10 +422,10 @@ async function processWebhook({
 }) {
   const supabase = getSupabase()
 
-  // 1. Find bot
+  // 1. Find bot (IMPORTANTE: incluir user_id para salvar pagamentos corretamente)
   const { data: bots, error: botError } = await supabase
     .from("bots")
-    .select("id, token, status")
+    .select("id, user_id, token, status")
     .eq("token", botToken)
     .limit(1)
 
